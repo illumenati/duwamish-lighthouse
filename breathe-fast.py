@@ -23,14 +23,59 @@ pause_time = 0.01           # you can change this to slow down/speed up
 # TODO: Make this a human breathe rate
 try:  
     while True:  
-        # white.ChangeDutyCycle(50)  
-        for i in range(0,101):      # 101 because it stops when it finishes 100  
+        for i in range(0,75):      # 101 because it stops when it finishes 100  
             white.ChangeDutyCycle(i)  
-            # red.ChangeDutyCycle(100 - i)  
             sleep(pause_time)  
-        for i in range(100,-1,-1):      # from 100 to zero in steps of -1  
+        for i in range(75,15,-1):
             white.ChangeDutyCycle(i)  
-            # red.ChangeDutyCycle(100 - i)  
+            sleep(pause_time)  
+        for i in range(15,45):      # 101 because it stops when it finishes 100  
+            white.ChangeDutyCycle(i)  
+            sleep(pause_time)  
+        for i in range(45,25,-1):      # from 100 to zero in steps of -1  
+            white.ChangeDutyCycle(i)  
+            sleep(pause_time)  
+        for i in range(25,70):      # 101 because it stops when it finishes 100  
+            white.ChangeDutyCycle(i)  
+            sleep(pause_time)  
+        for i in range(70,10,-1):      # from 100 to zero in steps of -1  
+            white.ChangeDutyCycle(i)  
+            sleep(pause_time)  
+        for i in range(10,30):      # 101 because it stops when it finishes 100  
+            white.ChangeDutyCycle(i)  
+            sleep(pause_time)  
+        for i in range(30,5,-1):      # from 100 to zero in steps of -1  
+            white.ChangeDutyCycle(i)  
+            sleep(pause_time)  
+        for i in range(5,75):      # 101 because it stops when it finishes 100  
+            white.ChangeDutyCycle(i)  
+            sleep(pause_time)  
+        for i in range(75,10,-1):      # from 100 to zero in steps of -1  
+            white.ChangeDutyCycle(i)  
+            sleep(pause_time)  
+        for i in range(10,50):      # 101 because it stops when it finishes 100  
+            white.ChangeDutyCycle(i)  
+            sleep(pause_time)  
+        for i in range(50,25,-1):      # from 100 to zero in steps of -1  
+            white.ChangeDutyCycle(i)  
+            sleep(pause_time)  
+        for i in range(25,100):      # 101 because it stops when it finishes 100  
+            white.ChangeDutyCycle(i)  
+            sleep(pause_time)  
+        for i in range(100,0,-1):      # from 100 to zero in steps of -1  
+            white.ChangeDutyCycle(i)  
+            sleep(pause_time)  
+        for i in range(0,15):      # 101 because it stops when it finishes 100  
+            white.ChangeDutyCycle(i)  
+            sleep(pause_time)  
+        for i in range(15,0,-1):      # from 100 to zero in steps of -1  
+            white.ChangeDutyCycle(i)  
+            sleep(pause_time)  
+        for i in range(0,35):      # 101 because it stops when it finishes 100  
+            white.ChangeDutyCycle(i)  
+            sleep(pause_time)  
+        for i in range(35,0,-1):      # from 100 to zero in steps of -1  
+            white.ChangeDutyCycle(i)  
             sleep(pause_time)  
             
 except KeyboardInterrupt:  
