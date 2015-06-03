@@ -11,8 +11,8 @@ class Breathe(object):
         print("initializing Breathe!")
 
         GPIO.setmode(GPIO.BCM)  # choose BCM or BOARD numbering schemes. I use BCM
-        GPIO.setup(26, GPIO.OUT)# set GPIO 26 as output for white led
-        self.light = GPIO.PWM(26, 100)    # create object white for PWM on port 26 at 100 Hertz
+        GPIO.setup(21, GPIO.OUT)# set GPIO 21 as output for white led
+        self.light = GPIO.PWM(21, 100)    # create object white for PWM on port 21 at 100 Hertz
         # self.light.start(0)
         self.p = Process(target=calm, args=(self.light,))
         self.p.start()
@@ -30,8 +30,8 @@ class Breathe(object):
         GPIO.cleanup()
         
         GPIO.setmode(GPIO.BCM)  # choose BCM or BOARD numbering schemes. I use BCM
-        GPIO.setup(26, GPIO.OUT)# set GPIO 26 as output for white led
-        self.light = GPIO.PWM(26, 100)    # create object white for PWM on port 26 at 100 Hertz
+        GPIO.setup(21, GPIO.OUT)# set GPIO 21 as output for white led
+        self.light = GPIO.PWM(21, 100)    # create object white for PWM on port 21 at 100 Hertz
         self.light.start(0)
         self.p = Process(target=calm, args=(self.light,))
         self.p.start()
