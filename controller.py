@@ -18,7 +18,6 @@ class Controller():
         self._data = {
             'ph': 0.0,
             'temperature': 0.0,
-            'salinity': 0.0,
             'oxygen': 0.0,
             'cso_now': 0,
             'cso_recent': 0
