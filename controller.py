@@ -33,14 +33,31 @@ class Controller:
     def breather(self) -> Breathe:
         return self._breather
 
-    def calculate_breathe_rate(self):
-        if self._data['temperature'] > TEMPERATURE_THRESHOLD or self._data['ph'] > PH_THRESHOLD or \
-                self._data['oxygen'] > OXYGEN_THRESHOLD or self._data['cso_recent'] > CSO_THRESHOLD or \
-                self._data['cso_now'] > CSO_THRESHOLD:
-            self.breathe_erratic()
-            return
+    @property
+    def bad_ph(self):
+        return self._data['ph'] < PH_THRESHOLD_LOWER or self._data['ph'] > PH_THRESHOLD_HIGHER
 
-        self.breathe_calm()
+    @property
+    def bad_temp(self):
+        return self._data['temperature'] > TEMPERATURE_THRESHOLD
+
+    @property
+    def bad_oxygen(self):
+        return self._data['oxygen'] > OXYGEN_THRESHOLD
+
+    @property
+    def bad_cso(self):
+        return self._data['cso_recent'] > CSO_THRESHOLD or self._data['cso_now'] > CSO_THRESHOLD
+
+    @property
+    def is_erratic(self):
+        return self.bad_ph or self.bad_cso or self.bad_oxygen or self.bad_temp
+
+    def calculate_breathe_rate(self):
+        if self.is_erratic:
+            self.breathe_erratic()
+        else:
+            self.breathe_calm()
 
     def data_route(self):
         """
