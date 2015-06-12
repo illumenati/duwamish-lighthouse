@@ -34,7 +34,7 @@ class Controller:
         return self._breather
 
     def calculate_breathe_rate(self):
-        if self._data['temperature'] > TEMPERATURE_THRESHOLD or self.data['ph'] > PH_THRESHOLD or \
+        if self._data['temperature'] > TEMPERATURE_THRESHOLD or self._data['ph'] > PH_THRESHOLD or \
                 self._data['oxygen'] > OXYGEN_THRESHOLD or self._data['cso_recent'] > CSO_THRESHOLD or \
                 self._data['cso_now'] > CSO_THRESHOLD:
             self.breathe_erratic()
