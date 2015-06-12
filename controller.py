@@ -1,5 +1,5 @@
 import bottle
-import breathe
+from breathe import Breathe
 
 
 # TODO: determine actual thresholds.
@@ -9,10 +9,11 @@ OXYGEN_THRESHOLD = 0
 CSO_THRESHOLD = 0
 
 
-class Controller():
-    def __init__(self, app):
+class Controller:
+    def __init__(self, app, breather):
         print('controller init')
         self.app = app
+        self._breather = breather
         self.app.route('/data', ['POST'], self.data_route)
 
         self._data = {
@@ -22,11 +23,15 @@ class Controller():
             'cso_now': 0,
             'cso_recent': 0
         }
-        self.breather = breathe.Breathe()
+
         self.app.route('/calm', ['GET'], self.breathe_calm)
         self.app.route('/erratic', ['GET'], self.breathe_erratic)
         self.app.route('/stop', ['GET'], self.breathe_stop)
         self.app.route('/restart', ['GET'], self.breathe_restart)
+
+    @property
+    def breather(self) -> Breathe:
+        return self._breather
 
     def calculate_breathe_rate(self):
         if self._data['temperature'] > TEMPERATURE_THRESHOLD or self.data['ph'] > PH_THRESHOLD or \
