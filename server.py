@@ -9,7 +9,7 @@ bottle_app = bottle.app()
 scheduler = BackgroundScheduler()
 scheduler.configure(timezone=timezone('US/Pacific'))
 breather = breathe.Breathe()
-my_controller = controller.Controller(bottle_app, None)
+my_controller = controller.Controller(bottle_app, breather)
 
 
 @scheduler.scheduled_job(trigger='cron', hour=21, minute=0)
