@@ -1,5 +1,6 @@
 import bottle
 from breathe import Breathe
+import datetime
 
 
 PH_THRESHOLD_LOWER = 6.5
@@ -24,10 +25,12 @@ class Controller:
             'cso_recent': 0
         }
 
-        self.app.route('/calm', ['GET'], self.breathe_calm)
-        self.app.route('/erratic', ['GET'], self.breathe_erratic)
-        self.app.route('/stop', ['GET'], self.breathe_stop)
-        self.app.route('/restart', ['GET'], self.breathe_restart)
+        # The following routes support manually controlling the pi's breathing
+        # Is there a way to pass in params to a function here? Ie "self.http_request('calm')"? Perhaps via keyword arguments?
+        self.app.route('/calm', ['GET'], self.http_calm)
+        self.app.route('/erratic', ['GET'], self.http_erratic)
+        self.app.route('/stop', ['GET'], self.http_stop)
+        self.app.route('/restart', ['GET'], self.http_restart)
 
     @property
     def breather(self) -> Breathe:
@@ -81,17 +84,40 @@ class Controller:
         return self._data
     
     def breathe_calm(self):
-        print("calm breathing request")
+        print("calm breathing")
         self.breather.calm()
 
     def breathe_erratic(self):
-        print("erratic breathing request")
+        print("erratic breathing")
         self.breather.erratic()
 
     def breathe_stop(self):
-        print("stop breathing request")
+        print("stop breathing")
         self.breather.shutdown()
 
     def breathe_restart(self):
-        print("restart breathing request")
+        print("restart breathing")
         self.breather.restart()
+
+    # The following are methods to support HTTP requests:
+
+    def http_calm(self):
+        self.breathe_calm()
+        return self.http_response('Your <b>calm</b> breathing request was received<br>at the time: {{date}}!')
+    
+    def http_erratic(self):
+        self.breathe_erratic()
+        return self.http_response('Your <b>erratic</b> breathing request was received<br>at the time: {{date}}!')
+    
+    def http_stop(self):
+        self.breathe_stop()
+        return self.http_response('Your <b>stop</b> breathing request was received<br>at the time: {{date}}!')
+    
+    def http_restart(self):
+        self.breathe_restart()
+        return self.http_response('Your <b>restart</b> breathing request was received<br>at the time: {{date}}!')
+        
+    def http_response(self, message):
+        print("returning http response:", message)
+        now = datetime.datetime.now()
+        return bottle.template(message, date=now)
