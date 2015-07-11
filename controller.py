@@ -31,6 +31,10 @@ class Controller:
         self.app.route('/erratic', ['GET'], self.http_erratic)
         self.app.route('/stop', ['GET'], self.http_stop)
         self.app.route('/restart', ['GET'], self.http_restart)
+        
+        self.app.route('/set-calm', ['GET'], self.http_set_calm)
+        self.app.route('/set-erratic', ['GET'], self.http_set_erratic)
+        self.app.route('/set-off', ['GET'], self.http_set_off)
 
     @property
     def breather(self) -> Breathe:
@@ -116,6 +120,19 @@ class Controller:
     def http_restart(self):
         self.breathe_restart()
         return self.http_response('Your <b>restart</b> breathing request was received<br>at the time: {{date}}!')
+    
+    def http_set_calm(self):
+        self.breather.set(self.breather.state.CALM)
+        return self.http_response('Your <b>set calm</b> breathing request was received<br>at the time: {{date}}!')
+    
+    def http_set_erratic(self):
+        # self.breathe_restart()
+        self.breather.set(self.breather.state.ERRATIC)
+        return self.http_response('Your <b>set erratic</b> breathing request was received<br>at the time: {{date}}!')
+    
+    def http_set_off(self):
+        self.breather.set(self.breather.state.OFF)
+        return self.http_response('Your <b>set off</b> breathing request was received<br>at the time: {{date}}!')
         
     def http_response(self, message):
         print("returning http response:", message)
