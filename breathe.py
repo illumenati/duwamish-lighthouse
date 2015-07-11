@@ -10,6 +10,8 @@ class Breathe(object):
         GPIO.setup(21, GPIO.OUT) # set GPIO 21 as output
         self.light = GPIO.PWM(21, 100) # create object for PWM on port 21 at 100 Hertz
         self.p = Process(target=calm, args=(self.light,))
+        self.state = breathe_state(('CALM', 'ERRATIC', 'OFF'))
+        self.restart_state = self.state.CALM
 
     def shutdown(self):
         if (self.p.is_alive()):
@@ -29,8 +31,14 @@ class Breathe(object):
         GPIO.setup(21, GPIO.OUT)
         self.light = GPIO.PWM(21, 100)
         self.light.start(0)
-        self.p = Process(target=calm, args=(self.light,))
-        self.p.start()
+        if (self.restart_state == self.state.CALM):
+            self.p = Process(target=calm, args=(self.light,))
+            self.p.start()
+        elif (self.restart_state == self.state.ERRATIC):
+            self.p = Process(target=erratic, args=(self.light,))
+            self.p.start()
+        else:
+            self.shutdown()
 
     def calm(self):
         if (self.p.is_alive()):
@@ -45,6 +53,17 @@ class Breathe(object):
         self.light.stop()
         self.p = Process(target=erratic, args=(self.light,))
         self.p.start()
+
+    def set(self, state):
+        self.restart_state = state
+        print("state has been set:", self.restart_state)
+
+class breathe_state(object): 
+    def __init__(self, tupleList):
+        self.tupleList = tupleList
+
+    def __getattr__(self, name):
+        return self.tupleList.index(name)       
         
 def calm(light):
     print("starting calm breathing...")
