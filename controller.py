@@ -1,7 +1,6 @@
 import bottle
 from breathe import Breathe
 import datetime
-import functools
 
 
 PH_THRESHOLD_LOWER = 6.5
@@ -27,14 +26,14 @@ class Controller:
         }
 
         # The following routes support manually controlling the pi's breathing
-        self.app.route('/calm', ['GET'], functools.partial(self.http_breathe, breathe_type='CALM'))
-        self.app.route('/erratic', ['GET'], functools.partial(self.http_breathe, breathe_type='ERRATIC'))
-        self.app.route('/stop', ['GET'], functools.partial(self.http_breathe, breathe_type='STOP'))
-        self.app.route('/restart', ['GET'], functools.partial(self.http_breathe, breathe_type='RESTART'))
+        self.app.route('/calm', ['GET'], lambda: self.http_breathe(breathe_type='CALM'))
+        self.app.route('/erratic', ['GET'], lambda: self.http_breathe(breathe_type='ERRATIC'))
+        self.app.route('/stop', ['GET'], lambda: self.http_breathe(breathe_type='STOP'))
+        self.app.route('/restart', ['GET'], lambda: self.http_breathe(breathe_type='RESTART'))
         
-        self.app.route('/set-calm', ['GET'], functools.partial(self.http_set_breathe, breathe_state='CALM'))
-        self.app.route('/set-erratic', ['GET'], functools.partial(self.http_set_breathe, breathe_state='ERRATIC'))
-        self.app.route('/set-stop', ['GET'], functools.partial(self.http_set_breathe, breathe_state='STOP'))
+        self.app.route('/set-calm', ['GET'], lambda: self.http_set_breathe(breathe_state='CALM'))
+        self.app.route('/set-erratic', ['GET'], lambda: self.http_set_breathe(breathe_state='ERRATIC'))
+        self.app.route('/set-stop', ['GET'], lambda: self.http_set_breathe(breathe_state='STOP'))
 
     @property
     def breather(self) -> Breathe:
