@@ -10,7 +10,7 @@ class Breathe(object):
         GPIO.setup(21, GPIO.OUT) # set GPIO 21 as output
         self.light = GPIO.PWM(21, 100) # create object for PWM on port 21 at 100 Hertz
         self.p = Process(target=calm, args=(self.light,))
-        self.state = breathe_state(('CALM', 'ERRATIC', 'OFF'))
+        self.state = breathe_state(('CALM', 'ERRATIC', 'STOP'))
         self.restart_state = self.state.CALM
 
     def shutdown(self):
@@ -46,6 +46,7 @@ class Breathe(object):
         self.light.stop()
         self.p = Process(target=calm, args=(self.light,))
         self.p.start()
+        print("calm breathing")
         
     def erratic(self):
         if (self.p.is_alive()):
@@ -53,6 +54,7 @@ class Breathe(object):
         self.light.stop()
         self.p = Process(target=erratic, args=(self.light,))
         self.p.start()
+        print("erratic breathing")
 
     def set(self, state):
         self.restart_state = state

@@ -1,6 +1,7 @@
 import bottle
 from breathe import Breathe
 import datetime
+import functools
 
 
 PH_THRESHOLD_LOWER = 6.5
@@ -26,15 +27,14 @@ class Controller:
         }
 
         # The following routes support manually controlling the pi's breathing
-        # Is there a way to pass in params to a function here? Ie "self.http_request('calm')"? Perhaps via keyword arguments?
-        self.app.route('/calm', ['GET'], self.http_calm)
-        self.app.route('/erratic', ['GET'], self.http_erratic)
-        self.app.route('/stop', ['GET'], self.http_stop)
-        self.app.route('/restart', ['GET'], self.http_restart)
+        self.app.route('/calm', ['GET'], functools.partial(self.http_breathe, breathe_type='CALM'))
+        self.app.route('/erratic', ['GET'], functools.partial(self.http_breathe, breathe_type='ERRATIC'))
+        self.app.route('/stop', ['GET'], functools.partial(self.http_breathe, breathe_type='STOP'))
+        self.app.route('/restart', ['GET'], functools.partial(self.http_breathe, breathe_type='RESTART'))
         
-        self.app.route('/set-calm', ['GET'], self.http_set_calm)
-        self.app.route('/set-erratic', ['GET'], self.http_set_erratic)
-        self.app.route('/set-off', ['GET'], self.http_set_off)
+        self.app.route('/set-calm', ['GET'], functools.partial(self.http_set_breathe, breathe_state='CALM'))
+        self.app.route('/set-erratic', ['GET'], functools.partial(self.http_set_breathe, breathe_state='ERRATIC'))
+        self.app.route('/set-stop', ['GET'], functools.partial(self.http_set_breathe, breathe_state='STOP'))
 
     @property
     def breather(self) -> Breathe:
@@ -62,9 +62,9 @@ class Controller:
 
     def calculate_breathe_rate(self):
         if self.is_erratic:
-            self.breathe_erratic()
+            self.breather.erratic()
         else:
-            self.breathe_calm()
+            self.breather.calm()
 
     def data_route(self):
         """
@@ -86,55 +86,28 @@ class Controller:
             print('No JSON data received!')
 
         return self._data
-    
-    def breathe_calm(self):
-        print("calm breathing")
-        self.breather.calm()
-
-    def breathe_erratic(self):
-        print("erratic breathing")
-        self.breather.erratic()
-
-    def breathe_stop(self):
-        print("stop breathing")
-        self.breather.shutdown()
-
-    def breathe_restart(self):
-        print("restart breathing")
-        self.breather.restart()
 
     # The following are methods to support HTTP requests:
 
-    def http_calm(self):
-        self.breathe_calm()
-        return self.http_response('Your <b>calm</b> breathing request was received<br>at the time: {{date}}!')
-    
-    def http_erratic(self):
-        self.breathe_erratic()
-        return self.http_response('Your <b>erratic</b> breathing request was received<br>at the time: {{date}}!')
-    
-    def http_stop(self):
-        self.breathe_stop()
-        return self.http_response('Your <b>stop</b> breathing request was received<br>at the time: {{date}}!')
-    
-    def http_restart(self):
-        self.breathe_restart()
-        return self.http_response('Your <b>restart</b> breathing request was received<br>at the time: {{date}}!')
-    
-    def http_set_calm(self):
-        self.breather.set(self.breather.state.CALM)
-        return self.http_response('Your <b>set calm</b> breathing request was received<br>at the time: {{date}}!')
-    
-    def http_set_erratic(self):
-        # self.breathe_restart()
-        self.breather.set(self.breather.state.ERRATIC)
-        return self.http_response('Your <b>set erratic</b> breathing request was received<br>at the time: {{date}}!')
-    
-    def http_set_off(self):
-        self.breather.set(self.breather.state.OFF)
-        return self.http_response('Your <b>set off</b> breathing request was received<br>at the time: {{date}}!')
-        
-    def http_response(self, message):
-        print("returning http response:", message)
+    def http_breathe(self, breathe_type):
+        breathe_types = {
+            'CALM': self.breather.calm,
+            'ERRATIC': self.breather.erratic,
+            'RESTART': self.breather.restart,
+            'STOP': self.breather.shutdown
+        }
+        breathe_types[breathe_type]()
         now = datetime.datetime.now()
-        return bottle.template(message, date=now)
+        print("Calling breathe type:", breathe_type, "at", now)
+        return bottle.template('Your <b>' + breathe_type + '</b> breathing request was started<br>at the time: {{date}}!', date=now)
+
+    def http_set_breathe(self, breathe_state):
+        breathe_states = {
+            'CALM': self.breather.state.CALM,
+            'ERRATIC': self.breather.state.ERRATIC,
+            'STOP': self.breather.state.STOP
+        }
+        self.breather.set(breathe_states[breathe_state])
+        print("Setting breathe state:", breathe_state)
+        return bottle.template('Your <b>' + breathe_state + '</b> breathing state was set<br>at the time: {{date}}!', date=datetime.datetime.now())
+ 
