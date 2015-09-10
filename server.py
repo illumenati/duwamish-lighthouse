@@ -18,7 +18,8 @@ def on_job():
     print('STARTING BREATHER')
     breather.restart()
 
-@scheduler.scheduled_job(trigger='cron', hour=0, minute=1)
+
+@scheduler.scheduled_job(trigger='cron', hour=22, minute=0)
 def off_job():
     """End at 12:01am PT"""
     print("STOPPING BREATHER")
