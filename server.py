@@ -12,14 +12,14 @@ breather = breathe.Breathe()
 my_controller = controller.Controller(bottle_app, breather)
 
 
-@scheduler.scheduled_job(trigger='cron', hour=19, minute=0)
+@scheduler.scheduled_job(trigger='cron', hour=17, minute=30)
 def on_job():
     """Start at 7:00pm PT"""
     print('STARTING BREATHER')
     breather.restart()
 
 
-@scheduler.scheduled_job(trigger='cron', hour=21, minute=0)
+@scheduler.scheduled_job(trigger='cron', hour=19, minute=30)
 def off_job():
     """End at 9:00pm PT"""
     print("STOPPING BREATHER")
