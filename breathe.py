@@ -9,7 +9,7 @@ class Breathe(object):
         GPIO.setup(21, GPIO.OUT)  # set GPIO 21 as output
         self.light = GPIO.PWM(21, 100)  # create object for PWM on port 21 at 100 Hertz
         self.p = Process(target=calm, args=(self.light,))
-        self.state = breathe_state(('CALM', 'ERRATIC', 'STOP'))
+        self.state = BreatheState(('CALM', 'ERRATIC', 'STOP'))
         self.restart_state = self.state.CALM
 
     def shutdown(self):
@@ -64,7 +64,7 @@ class Breathe(object):
         return self.state
 
 
-class breathe_state(object):
+class BreatheState(object):
     def __init__(self, tupleList):
         self.tupleList = tupleList
 
