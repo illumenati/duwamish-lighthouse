@@ -72,18 +72,24 @@ class BreatheState(object):
         return self.tupleList.index(name)
 
 
+def pulse_light(light, pause_time, pulse_sequence):
+    for values in pulse_sequence:
+        range_start, range_end, step = values
+
+        for i in range(range_start, range_end, step):
+            light.ChangeDutyCycle(i)
+            sleep(pause_time)
+
+
 def calm(light):
     print("starting calm breathing...")
     light.start(0)
     pause_time = 0.02
+    pulse_sequence = [(0, 101, 1), (100, -1, -1)]
+
     try:
         while True:
-            for i in range(0, 101):
-                light.ChangeDutyCycle(i)
-                sleep(pause_time)
-            for i in range(100, -1, -1):
-                light.ChangeDutyCycle(i)
-                sleep(pause_time)
+            pulse_light(light, pause_time, pulse_sequence)
     finally:
         print("stopping calm breathing")
         light.stop()
@@ -94,63 +100,13 @@ def erratic(light):
     print("starting erratic breathing...")
     light.start(0)
     pause_time = 0.007
+    pulse_sequence = [(0, 75, 1), (75, 15, -1), (15, 45, 1), (45, 25, -1), (25, 70, 1), (70, 10, -1), (10, 30, 1),
+                      (30, 5, -1), (5, 75, 1), (75, 10, -1), (10, 50, 1), (50, 25, -1), (25, 100, 1), (100, 0, -1),
+                      (0, 15, 1), (15, 0, -1), (0, 35, 1), (35, 0, -1)]
 
     try:
         while True:
-            for i in range(0, 75):
-                light.ChangeDutyCycle(i)
-                sleep(pause_time)
-            for i in range(75, 15, -1):
-                light.ChangeDutyCycle(i)
-                sleep(pause_time)
-            for i in range(15, 45):
-                light.ChangeDutyCycle(i)
-                sleep(pause_time)
-            for i in range(45, 25, -1):
-                light.ChangeDutyCycle(i)
-                sleep(pause_time)
-            for i in range(25, 70):
-                light.ChangeDutyCycle(i)
-                sleep(pause_time)
-            for i in range(70, 10, -1):
-                light.ChangeDutyCycle(i)
-                sleep(pause_time)
-            for i in range(10, 30):
-                light.ChangeDutyCycle(i)
-                sleep(pause_time)
-            for i in range(30, 5, -1):
-                light.ChangeDutyCycle(i)
-                sleep(pause_time)
-            for i in range(5, 75):
-                light.ChangeDutyCycle(i)
-                sleep(pause_time)
-            for i in range(75, 10, -1):
-                light.ChangeDutyCycle(i)
-                sleep(pause_time)
-            for i in range(10, 50):
-                light.ChangeDutyCycle(i)
-                sleep(pause_time)
-            for i in range(50, 25, -1):
-                light.ChangeDutyCycle(i)
-                sleep(pause_time)
-            for i in range(25, 100):
-                light.ChangeDutyCycle(i)
-                sleep(pause_time)
-            for i in range(100, 0, -1):
-                light.ChangeDutyCycle(i)
-                sleep(pause_time)
-            for i in range(0, 15):
-                light.ChangeDutyCycle(i)
-                sleep(pause_time)
-            for i in range(15, 0, -1):
-                light.ChangeDutyCycle(i)
-                sleep(pause_time)
-            for i in range(0, 35):
-                light.ChangeDutyCycle(i)
-                sleep(pause_time)
-            for i in range(35, 0, -1):
-                light.ChangeDutyCycle(i)
-                sleep(pause_time)
+            pulse_light(light, pause_time, pulse_sequence)
     finally:
         print("stopping erratic breathing")
         light.stop()
