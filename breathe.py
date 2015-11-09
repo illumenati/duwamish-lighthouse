@@ -56,11 +56,16 @@ class Breathe(object):
         self.p.start()
         print("erratic breathing")
 
-    def set(self, state):
+    def set_state(self, state):
         self.restart_state = state
         print("state has been set:", self.restart_state)
 
-class breathe_state(object): 
+    def get_state(self):
+        print("state has been set:", self.restart_state)
+        return self.state
+
+
+class breathe_state(object):
     def __init__(self, tupleList):
         self.tupleList = tupleList
 

@@ -26,6 +26,8 @@ class Controller:
         }
 
         # The following routes support manually controlling the pi's breathing
+        self.app.route('/get-state', ['GET'], lambda: self.http_get_state())
+
         self.app.route('/calm', ['GET'], lambda: self.http_breathe(breathe_type='CALM'))
         self.app.route('/erratic', ['GET'], lambda: self.http_breathe(breathe_type='ERRATIC'))
         self.app.route('/stop', ['GET'], lambda: self.http_breathe(breathe_type='STOP'))
@@ -87,6 +89,12 @@ class Controller:
         return self._data
 
     # The following are methods to support HTTP requests:
+    def http_get_state(self):
+        state = self.breather.get_state()
+        now = datetime.datetime.now()
+        print("Breathe type is:", state, "at", now)
+        return bottle.template('The pi breathing state is <b>' + state + '</b> <br>at the time: {{date}}!', date=now)
+
 
     def http_breathe(self, breathe_type):
         breathe_types = {
@@ -106,7 +114,6 @@ class Controller:
             'ERRATIC': self.breather.state.ERRATIC,
             'STOP': self.breather.state.STOP
         }
-        self.breather.set(breathe_states[breathe_state])
+        self.breather.set_state(breathe_states[breathe_state])
         print("Setting breathe state:", breathe_state)
         return bottle.template('Your <b>' + breathe_state + '</b> breathing state was set<br>at the time: {{date}}!', date=datetime.datetime.now())
- 
