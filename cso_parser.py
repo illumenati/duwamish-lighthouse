@@ -32,7 +32,9 @@ class CsoParser:
 
     csv_url = 'http://your.kingcounty.gov/dnrp/library/wastewater/cso/img/cso.csv'
 
-    def __init__(self):
+    def __init__(self, requested=None):
+        # requested is a set of CSO TagName strings 
+        self.requested = requested
         self.now_count = 0
         self.recent_count = 0
         self.not_count = 0
@@ -74,15 +76,17 @@ class CsoParser:
             if not first_line:
                 row_count += 1
                 cso, status = row
-
-                if status == '1':
-                    now_count += 1
-                elif status == '2':
-                    recent_count += 1
-                elif status == '3':
-                    not_count += 1
-                elif status == '4':
-                    not_real_time_count += 1
+                
+                # default to tracking all CSOs
+                if self.requested is not None and cso in self.requested:
+                    if status == '1':
+                        now_count += 1
+                    elif status == '2':
+                        recent_count += 1
+                    elif status == '3':
+                        not_count += 1
+                    elif status == '4':
+                        not_real_time_count += 1
             else:
                 first_line = False
 
@@ -110,7 +114,11 @@ class CsoParser:
                 traceback.print_exc()
 
 if __name__ == '__main__':
-    c = CsoParser()
+    r = {"KDOM.CSOSTATUS_N", "HARB.CSOSTATUS_N", "CHEL.CSOSTATUS_N", "LAND.CSOSTATUS_N", "HANF.CSOSTATUS_N",
+                 "DUWA.CSOSTATUS_N", "BRAN.CSOSTATUS_N", "T115.CSOSTATUS_N", "MICH.CSOSTATUS_N", "WMIC.CSOSTATUS_N",
+                 "EMAR.CSOSTATUS_N", "8TH.CSOSTATUS_N", "NORF.CSOSTATUS_N", "NPDES078", "NPDES080", "NPDES107",
+                 "NPDES116"}
+    c = CsoParser(r)
     c.csv_url = 'http://localhost:8080/'
     c.update()
     print(c.now_count, c.recent_count, c.not_count, c.not_real_time_count)
