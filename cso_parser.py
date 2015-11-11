@@ -39,8 +39,8 @@ class CsoParser:
         self.recent_count = 0
         self.not_count = 0
         self.not_real_time_count = 0
+        self.last_update = time.time() - frequency
         self.thread = None
-        self.status = 1
 
     def _get_csv(self):
         logger.info('Retrieving CSV file.')
@@ -94,30 +94,30 @@ class CsoParser:
         self.recent_count = recent_count
         self.not_count = not_count
         self.not_real_time_count = not_real_time_count
+        self.last_update = time.time()
 
         log_msg = 'Rows: {}, Now Count: {}, Recent Count: {}, No Count: {}, Not Real Time: {}'
         logger.info(log_msg.format(row_count, now_count, recent_count, not_count, not_real_time_count))
 
     def _run_loop(self):
         while self.is_running:
-            try:
-                self.status = 1
-                self._get_csv()
-            except Exception:
-                self.status = 0
-                logger.exception('Error retrieving CSV!')
-                traceback.print_exc()
-            else:
-                # Only parse the csv if we successfully retrieve it.
-                try:
-                    self.status = 1
-                    self._parse_csv()
-                except Exception:
-                    self.status = 0
-                    logger.exception('Error parsing CSV!')
-                    traceback.print_exc()
+            now = time.time()
 
-            time.sleep(self.frequency)
+            if now - self.last_update >= self.frequency:
+                try:
+                    self._get_csv()
+                except Exception:
+                    logger.exception('Error retrieving CSV!')
+                    traceback.print_exc()
+                else:
+                    # Only parse the csv if we successfully retrieve it.
+                    try:
+                        self._parse_csv()
+                    except Exception:
+                        logger.exception('Error parsing CSV!')
+                        traceback.print_exc()
+
+            time.sleep(1)
 
     def start(self):
         logger.info('Starting CsoParser')
