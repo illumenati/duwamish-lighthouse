@@ -1,6 +1,5 @@
 import bottle
-from breathe import Breathe
-import datetime
+from breathe import Breathe, BreatheState
 
 
 PH_THRESHOLD_LOWER = 6.5
@@ -27,15 +26,10 @@ class Controller:
 
         # The following routes support manually controlling the pi's breathing
         self.app.route('/get-state', ['GET'], lambda: self.http_get_state())
-
-        self.app.route('/calm', ['GET'], lambda: self.http_breathe(breathe_type='CALM'))
-        self.app.route('/erratic', ['GET'], lambda: self.http_breathe(breathe_type='ERRATIC'))
-        self.app.route('/stop', ['GET'], lambda: self.http_breathe(breathe_type='STOP'))
-        self.app.route('/restart', ['GET'], lambda: self.http_breathe(breathe_type='RESTART'))
-        
-        self.app.route('/set-calm', ['GET'], lambda: self.http_set_breathe(breathe_state='CALM'))
-        self.app.route('/set-erratic', ['GET'], lambda: self.http_set_breathe(breathe_state='ERRATIC'))
-        self.app.route('/set-stop', ['GET'], lambda: self.http_set_breathe(breathe_state='STOP'))
+        self.app.route('/calm', ['GET'], lambda: self.http_breathe(option='CALM'))
+        self.app.route('/erratic', ['GET'], lambda: self.http_breathe(option='ERRATIC'))
+        self.app.route('/stop', ['GET'], lambda: self.http_breathe(option='STOP'))
+        self.app.route('/restart', ['GET'], lambda: self.http_breathe(option='RESTART'))
 
     @property
     def breather(self) -> Breathe:
@@ -88,32 +82,22 @@ class Controller:
 
         return self._data
 
-    # The following are methods to support HTTP requests:
     def http_get_state(self):
-        state = self.breather.get_state()
-        now = datetime.datetime.now()
-        print("Breathe type is:", state, "at", now)
-        return bottle.template('The pi breathing state is <b>' + state + '</b> <br>at the time: {{date}}!', date=now)
+        breathe_state = self.breather.state['breathe_state'].name
 
+        if self.breather.state['stop']:
+            breathe_state = 'stopped'
 
-    def http_breathe(self, breathe_type):
-        breathe_types = {
-            'CALM': self.breather.calm,
-            'ERRATIC': self.breather.erratic,
-            'RESTART': self.breather.restart,
-            'STOP': self.breather.shutdown
-        }
-        breathe_types[breathe_type]()
-        now = datetime.datetime.now()
-        print("Calling breathe type:", breathe_type, "at", now)
-        return bottle.template('Your <b>' + breathe_type + '</b> breathing request was started<br>at the time: {{date}}!', date=now)
+        return "The light house is {}.".format(breathe_state)
 
-    def http_set_breathe(self, breathe_state):
-        breathe_states = {
-            'CALM': self.breather.state.CALM,
-            'ERRATIC': self.breather.state.ERRATIC,
-            'STOP': self.breather.state.STOP
-        }
-        self.breather.set_state(breathe_states[breathe_state])
-        print("Setting breathe state:", breathe_state)
-        return bottle.template('Your <b>' + breathe_state + '</b> breathing state was set<br>at the time: {{date}}!', date=datetime.datetime.now())
+    def http_breathe(self, option):
+        if option == 'CALM':
+            self.breather.calm()
+        elif option == 'ERRATIC':
+            self.breather.erratic()
+        elif option == 'STOP':
+            self.breather.stop()
+        elif option == 'RESTART':
+            self.breather.restart()
+
+        return "The light house has been set to {}".format(option)
