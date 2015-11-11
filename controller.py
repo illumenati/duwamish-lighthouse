@@ -1,6 +1,5 @@
 import bottle
-from breathe import Breathe
-import datetime
+from breathe import Breathe, BreatheState
 
 
 PH_THRESHOLD_LOWER = 6.5
@@ -12,7 +11,6 @@ CSO_THRESHOLD = 0
 
 class Controller:
     def __init__(self, app, breather):
-        print('controller init')
         self.app = app
         self._breather = breather
         self.app.route('/data', ['POST'], self.data_route)
@@ -25,17 +23,7 @@ class Controller:
             'cso_recent': 0
         }
 
-        # The following routes support manually controlling the pi's breathing
-        self.app.route('/get-state', ['GET'], lambda: self.http_get_state())
-
-        self.app.route('/calm', ['GET'], lambda: self.http_breathe(breathe_type='CALM'))
-        self.app.route('/erratic', ['GET'], lambda: self.http_breathe(breathe_type='ERRATIC'))
-        self.app.route('/stop', ['GET'], lambda: self.http_breathe(breathe_type='STOP'))
-        self.app.route('/restart', ['GET'], lambda: self.http_breathe(breathe_type='RESTART'))
-        
-        self.app.route('/set-calm', ['GET'], lambda: self.http_set_breathe(breathe_state='CALM'))
-        self.app.route('/set-erratic', ['GET'], lambda: self.http_set_breathe(breathe_state='ERRATIC'))
-        self.app.route('/set-stop', ['GET'], lambda: self.http_set_breathe(breathe_state='STOP'))
+        self.app.route('/', ['GET', 'POST'], self.index_page)
 
     @property
     def breather(self) -> Breathe:
@@ -88,32 +76,27 @@ class Controller:
 
         return self._data
 
-    # The following are methods to support HTTP requests:
-    def http_get_state(self):
-        state = self.breather.get_state()
-        now = datetime.datetime.now()
-        print("Breathe type is:", state, "at", now)
-        return bottle.template('The pi breathing state is <b>' + state + '</b> <br>at the time: {{date}}!', date=now)
+    def handle_post(self, option):
+        if option == 'CALM':
+            self.breather.calm()
+        elif option == 'ERRATIC':
+            self.breather.erratic()
+        elif option == 'OFF':
+            self.breather.stop()
+        elif option == 'ON':
+            self.breather.restart()
+        else:
+            raise ValueError('Unknown value: "{}"'.format(option))
 
+    def index_page(self):
+        req = bottle.request
 
-    def http_breathe(self, breathe_type):
-        breathe_types = {
-            'CALM': self.breather.calm,
-            'ERRATIC': self.breather.erratic,
-            'RESTART': self.breather.restart,
-            'STOP': self.breather.shutdown
-        }
-        breathe_types[breathe_type]()
-        now = datetime.datetime.now()
-        print("Calling breathe type:", breathe_type, "at", now)
-        return bottle.template('Your <b>' + breathe_type + '</b> breathing request was started<br>at the time: {{date}}!', date=now)
+        if req.method == 'POST':
+            self.handle_post(req.params.state)
 
-    def http_set_breathe(self, breathe_state):
-        breathe_states = {
-            'CALM': self.breather.state.CALM,
-            'ERRATIC': self.breather.state.ERRATIC,
-            'STOP': self.breather.state.STOP
-        }
-        self.breather.set_state(breathe_states[breathe_state])
-        print("Setting breathe state:", breathe_state)
-        return bottle.template('Your <b>' + breathe_state + '</b> breathing state was set<br>at the time: {{date}}!', date=datetime.datetime.now())
+        breathe_state = self.breather.state['breathe_state'].name
+
+        if self.breather.state['stop']:
+            breathe_state = 'stopped'
+
+        return bottle.template('index.html', state=breathe_state)

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Duwamish Lighthouse</title>
+</head>
+<body>
+<h1>Duwamish Lighthouse</h1>
+<p>The lighthouse is currently {{state}}.</p>
+<button>On</button>
+<button>Off</button>
+<button>Calm</button>
+<button>Erratic</button>
+
+<script src="http://code.jquery.com/jquery-2.1.4.min.js"></script>
+<script>
+    var buttons = $('button');
+
+    buttons.on('click', function (event) {
+        var state = $(event.target).text().toUpperCase();
+
+        $.post('/', {state: state}, function () {
+            location.reload();
+        });
+    });
+</script>
+</body>
+</html>
