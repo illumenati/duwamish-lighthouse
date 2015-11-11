@@ -11,7 +11,6 @@ CSO_THRESHOLD = 0
 
 class Controller:
     def __init__(self, app, breather):
-        print('controller init')
         self.app = app
         self._breather = breather
         self.app.route('/data', ['POST'], self.data_route)
@@ -24,12 +23,7 @@ class Controller:
             'cso_recent': 0
         }
 
-        # The following routes support manually controlling the pi's breathing
-        self.app.route('/get-state', ['GET'], lambda: self.http_get_state())
-        self.app.route('/calm', ['GET'], lambda: self.http_breathe(option='CALM'))
-        self.app.route('/erratic', ['GET'], lambda: self.http_breathe(option='ERRATIC'))
-        self.app.route('/stop', ['GET'], lambda: self.http_breathe(option='STOP'))
-        self.app.route('/restart', ['GET'], lambda: self.http_breathe(option='RESTART'))
+        self.app.route('/', ['GET', 'POST'], self.index_page)
 
     @property
     def breather(self) -> Breathe:
@@ -82,22 +76,27 @@ class Controller:
 
         return self._data
 
-    def http_get_state(self):
+    def handle_post(self, option):
+        if option == 'CALM':
+            self.breather.calm()
+        elif option == 'ERRATIC':
+            self.breather.erratic()
+        elif option == 'OFF':
+            self.breather.stop()
+        elif option == 'ON':
+            self.breather.restart()
+        else:
+            raise ValueError('Unknown value: "{}"'.format(option))
+
+    def index_page(self):
+        req = bottle.request
+
+        if req.method == 'POST':
+            self.handle_post(req.params.state)
+
         breathe_state = self.breather.state['breathe_state'].name
 
         if self.breather.state['stop']:
             breathe_state = 'stopped'
 
-        return "The light house is {}.".format(breathe_state)
-
-    def http_breathe(self, option):
-        if option == 'CALM':
-            self.breather.calm()
-        elif option == 'ERRATIC':
-            self.breather.erratic()
-        elif option == 'STOP':
-            self.breather.stop()
-        elif option == 'RESTART':
-            self.breather.restart()
-
-        return "The light house has been set to {}".format(option)
+        return bottle.template('index.html', state=breathe_state)
