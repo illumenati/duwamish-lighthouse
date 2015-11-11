@@ -10,7 +10,10 @@ bottle_app = bottle.app()
 scheduler = BackgroundScheduler()
 scheduler.configure(timezone=timezone('US/Pacific'))
 breather = Breathe()
-cso_parser = CsoParser()
+requested = {"KDOM.CSOSTATUS_N", "HARB.CSOSTATUS_N", "CHEL.CSOSTATUS_N", "LAND.CSOSTATUS_N", "HANF.CSOSTATUS_N",
+             "DUWA.CSOSTATUS_N", "BRAN.CSOSTATUS_N", "T115.CSOSTATUS_N", "MICH.CSOSTATUS_N", "WMIC.CSOSTATUS_N",
+             "EMAR.CSOSTATUS_N", "8TH.CSOSTATUS_N", "NORF.CSOSTATUS_N", "NPDES078", "NPDES080", "NPDES107", "NPDES116"}
+cso_parser = CsoParser(requested)
 my_controller = Controller(bottle_app, breather)
 
 
