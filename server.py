@@ -1,15 +1,17 @@
 import bottle
+from cso_parser import CsoParser
 import waitress
-import controller
-import breathe
 from pytz import timezone
 from apscheduler.schedulers.background import BackgroundScheduler
+from breathe import Breathe
+from controller import Controller
 
 bottle_app = bottle.app()
 scheduler = BackgroundScheduler()
 scheduler.configure(timezone=timezone('US/Pacific'))
-breather = breathe.Breathe()
-my_controller = controller.Controller(bottle_app, breather)
+breather = Breathe()
+cso_parser = CsoParser()
+my_controller = Controller(bottle_app, breather)
 
 
 @scheduler.scheduled_job(trigger='cron', hour=17, minute=30)
@@ -24,6 +26,18 @@ def off_job():
     """End at 9:00pm PT"""
     print("STOPPING BREATHER")
     breather.stop()
+
+
+@scheduler.scheduled_job(trigger='cron', hour=1, minute=30)
+def cso_job():
+    """Get CSO data at 1:30am and update the breather with the current status."""
+    print("Fetch CSO status and update breather.")
+    cso_parser.update()
+
+    if cso_parser.now_count or cso_parser.recent_count:
+        breather.erratic()
+    else:
+        breather.calm()
 
 if __name__ == '__main__':
     scheduler.start()
