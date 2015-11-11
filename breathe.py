@@ -1,14 +1,7 @@
 from enum import Enum
-from time import sleep
 from multiprocessing import Process, Manager
 import RPi.GPIO as GPIO
-
-CALM_PAUSE = 0.02
-CALM_SEQUENCE = [(0, 101, 1), (100, -1, -1)]
-ERRATIC_PAUSE = 0.007
-ERRATIC_SEQUENCE = [(0, 75, 1), (75, 15, -1), (15, 45, 1), (45, 25, -1), (25, 70, 1), (70, 10, -1), (10, 30, 1),
-                    (30, 5, -1), (5, 75, 1), (75, 10, -1), (10, 50, 1), (50, 25, -1), (25, 100, 1), (100, 0, -1),
-                    (0, 15, 1), (15, 0, -1), (0, 35, 1), (35, 0, -1)]
+import breathe_equations
 
 
 class BreatheState(Enum):
@@ -16,21 +9,17 @@ class BreatheState(Enum):
     erratic = 2
 
 
-def pulse_light(light, pause_time, pulse_sequence):
-    for values in pulse_sequence:
-        range_start, range_end, step = values
-
-        for i in range(range_start, range_end, step):
-            light.ChangeDutyCycle(i)
-            sleep(pause_time)
+def pulse_light(light, pulse_generator):
+    for value in pulse_generator:
+        light.ChangeDutyCycle(value)
 
 
 def breathe_calm(light):
-    pulse_light(light, CALM_PAUSE, CALM_SEQUENCE)
+    pulse_light(light, breathe_equations.calm_generator())
 
 
 def breathe_erratic(light):
-    pulse_light(light, ERRATIC_PAUSE, ERRATIC_SEQUENCE)
+    pulse_light(light, breathe_equations.erratic_generator())
 
 
 def breathe_loop(state):
