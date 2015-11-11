@@ -32,15 +32,11 @@ class CsoParser:
 
     csv_url = 'http://your.kingcounty.gov/dnrp/library/wastewater/cso/img/cso.csv'
 
-    def __init__(self, frequency=30 * 60):
-        self.frequency = frequency
-        self.is_running = False
+    def __init__(self):
         self.now_count = 0
         self.recent_count = 0
         self.not_count = 0
         self.not_real_time_count = 0
-        self.last_update = time.time() - frequency
-        self.thread = None
 
     def _get_csv(self):
         logger.info('Retrieving CSV file.')
@@ -99,43 +95,22 @@ class CsoParser:
         log_msg = 'Rows: {}, Now Count: {}, Recent Count: {}, No Count: {}, Not Real Time: {}'
         logger.info(log_msg.format(row_count, now_count, recent_count, not_count, not_real_time_count))
 
-    def _run_loop(self):
-        while self.is_running:
-            now = time.time()
-
-            if now - self.last_update >= self.frequency:
-                try:
-                    self._get_csv()
-                except Exception:
-                    logger.exception('Error retrieving CSV!')
-                    traceback.print_exc()
-                else:
-                    # Only parse the csv if we successfully retrieve it.
-                    try:
-                        self._parse_csv()
-                    except Exception:
-                        logger.exception('Error parsing CSV!')
-                        traceback.print_exc()
-
-            time.sleep(1)
-
-    def start(self):
-        logger.info('Starting CsoParser')
-        self.is_running = True
-        self.thread = threading.Thread(target=self._run_loop, daemon=True)
-        self.thread.start()
-
-    def stop(self):
-        logger.info('Stopping CsoParser')
-        self.is_running = False
-        self.thread.join()
-        self.thread = None
-
+    def update(self):
+        try:
+            self._get_csv()
+        except Exception:
+            logger.exception('Error retrieving CSV!')
+            traceback.print_exc()
+        else:
+            # Only parse the csv if we successfully retrieve it.
+            try:
+                self._parse_csv()
+            except Exception:
+                logger.exception('Error parsing CSV!')
+                traceback.print_exc()
 
 if __name__ == '__main__':
     c = CsoParser()
     c.csv_url = 'http://localhost:8080/'
-    c.start()
-    time.sleep(2)
+    c.update()
     print(c.now_count, c.recent_count, c.not_count, c.not_real_time_count)
-    c.stop()
