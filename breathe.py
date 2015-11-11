@@ -34,12 +34,20 @@ def breathe_erratic(light):
 
 
 def breathe_loop(state):
+    light = None
+
     while True:
         if state.get('stop'):
+            light.stop()
+            GPIO.cleanup()
             break
+        elif light is None:
+            GPIO.setmode(GPIO.BCM)  # We can also choose a BOARD numbering schemes.
+            GPIO.setup(21, GPIO.OUT)  # set GPIO 21 as output
+            light = GPIO.PWM(21, 100)  # create object for PWM on port 21 at 100 Hertz
+            light.start(0)
 
         breathe_state = state['breathe_state']
-        light = state['light']
 
         if breathe_state is BreatheState.calm:
             breathe_calm(light)
@@ -53,29 +61,16 @@ class Breathe:
         self.state = self.manager.dict()
         self.state['breathe_state'] = BreatheState.calm
         self.state['stop'] = False
-        self.setup_light()
         self.process = None
         self.start()
         
-    def setup_light(self):
-        GPIO.setmode(GPIO.BCM)  # We can also choose a BOARD numbering schemes.
-        GPIO.setup(21, GPIO.OUT)  # set GPIO 21 as output
-        self.state['light'] = GPIO.PWM(21, 100)  # create object for PWM on port 21 at 100 Hertz
-        self.state['light'].start(0)
-
-    def cleanup_light(self):
-        self.state['light'].stop()
-        GPIO.cleanup()
-
     def stop(self):
         if not self.state['stop']:
             self.state['stop'] = True
             self.process.join()
-            self.cleanup_light()
-        
+
     def start(self):
         self.state['stop'] = False
-        self.setup_light()
         self.process = Process(target=breathe_loop, args=(self.state,))
         self.process.start()
 
