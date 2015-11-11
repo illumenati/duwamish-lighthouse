@@ -23,7 +23,7 @@ def on_job():
 def off_job():
     """End at 9:00pm PT"""
     print("STOPPING BREATHER")
-    breather.shutdown()
+    breather.stop()
 
 if __name__ == '__main__':
     scheduler.start()
