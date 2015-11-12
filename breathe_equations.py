@@ -14,14 +14,15 @@ from time import sleep
 
 # Custom Params:
 CALM_INTERVAL = 0.02  # in seconds
-INHALE_TIME = 3.0
+INHALE_TIME = 2.0
 INHALE_HOLD = 0.5
-EXHALE_TIME = 5.0
-TOTAL_TIME = INHALE_HOLD + INHALE_TIME + EXHALE_TIME
+EXHALE_TIME = 3.0
+EXHALE_HOLD = 0.5
+TOTAL_TIME = INHALE_HOLD + INHALE_TIME + EXHALE_TIME + EXHALE_HOLD
 
 STEP_DURATION = 0.02
 
-V_MIN = 10
+V_MIN = 2
 V_MAX = 100
 
 INHALE_T_A = 0
@@ -74,9 +75,11 @@ def breathe_calm(t):
         return math.floor(inhale(t))
     elif t < INHALE_TIME + INHALE_HOLD:
         return V_MAX
-    else:
+    elif t < INHALE_TIME + INHALE_HOLD + EXHALE_TIME:
         exhale_time_offset = t - (INHALE_TIME + INHALE_HOLD)
         return math.floor(exhale(exhale_time_offset))
+    else:
+        return 1
 
 
 def calm_generator():
